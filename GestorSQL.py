@@ -4,6 +4,7 @@ import streamlit as st
 from pathlib import Path
 import urllib
 
+#st.cache_resource
 def get_connection():
 
     S='186.31.65.250'
@@ -13,10 +14,11 @@ def get_connection():
 
     quoted_pwd = urllib.parse.quote_plus(P)
 
+    #[ODBC Driver 18 for SQL Server]
     # Lista de cadenas de conexión a probar, en orden de preferencia
     # Nota: Uso 'ODBC Driver 18 for SQL Server' porque es el que intentamos instalar en Debian.
     connection_strings_to_try = [
-        (f"mssql+pyodbc://{U}:{quoted_pwd}@{S}/{D}?driver=ODBC+Driver+18+for+SQL+Server", "Linux"),
+        (f"mssql+pyodbc://{U}:{quoted_pwd}@{S}/{D}?driver=ODBC+Driver+17+for+SQL+Server", "Linux"),
         (f"mssql+pyodbc://{U}:{quoted_pwd}@{S}/{D}?driver=SQL+Server", "Windows")
     ]
 
