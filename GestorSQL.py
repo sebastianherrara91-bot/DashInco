@@ -11,19 +11,34 @@ def get_connection():
     U='User_Conect3'
     P='P3p3Inc004'
 
-    try:
-        quoted_pwd = urllib.parse.quote_plus(P)
-        connection_string = f"mssql+pyodbc://{U}:{quoted_pwd}@{S}/{D}?driver=ODBC+Driver+17+for+SQL+Server" #msodbcsql17
-        engine = create_engine(connection_string)
-        
-        # Probar la conexión
-        with engine.connect():
-            print("Conexión exitosa a la base de datos")
-        return engine
-        
-    except Exception as e:
-        st.error(f"Error al conectar a la base de datos: {str(e)}")
-        return None
+    quoted_pwd = urllib.parse.quote_plus(P)
+
+    # Lista de cadenas de conexión a probar, en orden de preferencia
+    # Nota: Uso 'ODBC Driver 18 for SQL Server' porque es el que intentamos instalar en Debian.
+    connection_strings_to_try = [
+        (f"mssql+pyodbc://{U}:{quoted_pwd}@{S}/{D}?driver=ODBC+Driver+18+for+SQL+Server", "Linux"),
+        (f"mssql+pyodbc://{U}:{quoted_pwd}@{S}/{D}?driver=SQL+Server", "Windows")
+    ]
+
+    last_error = None
+    for conn_str, config_type in connection_strings_to_try:
+        try:
+            print(f"Intentando conectar con la configuración de {config_type}...")
+            engine = create_engine(conn_str)
+            # Intentamos una conexión real para validar
+            with engine.connect():
+                print(f"¡Conexión exitosa con la configuración de {config_type}!")
+                return engine
+        except Exception as e:
+            print(f"Falló la conexión con {config_type}: {e}\n")
+            last_error = e
+            # Si falla, el bucle 'continue' pasa a la siguiente cadena de la lista
+
+    # Si el bucle termina, significa que todas las conexiones fallaron.
+    print("Todas las configuraciones de conexión fallaron.")
+    st.error(f"No se pudo conectar a la base de datos. Último error: {last_error}")
+    return None
+
 
 def test_connection():
     """Función para probar la conexión"""
