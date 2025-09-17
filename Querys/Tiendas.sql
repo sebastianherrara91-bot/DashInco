@@ -1,0 +1,8 @@
+SELECT [INI_CLIENTE]
+      ,[N_LOCAL]
+      ,[LOCAL]
+      ,[CIUDAD] 
+      ,[TIPO]
+      ,[CURVA]
+      ,[CODIGO]
+  FROM [DWH_INCO].[dbo].[TIENDAS]
