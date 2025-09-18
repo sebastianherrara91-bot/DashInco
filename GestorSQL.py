@@ -16,13 +16,12 @@ def get_connection():
 
     #[ODBC Driver 18 for SQL Server]
     # Lista de cadenas de conexión a probar, en orden de preferencia
-    # Nota: Uso 'ODBC Driver 18 for SQL Server' porque es el que intentamos instalar en Debian.
     connection_strings_to_try = [
         (f"mssql+pyodbc://{U}:{quoted_pwd}@{S}/{D}?driver=ODBC+Driver+18+for+SQL+Server", "Linux"),
         (f"mssql+pyodbc://{U}:{quoted_pwd}@{S}/{D}?driver=SQL+Server", "Windows")
     ]
 
-    last_error = None
+    error_messages = []
     for conn_str, config_type in connection_strings_to_try:
         try:
             print(f"Intentando conectar con la configuración de {config_type}...")
@@ -32,13 +31,15 @@ def get_connection():
                 print(f"¡Conexión exitosa con la configuración de {config_type}!")
                 return engine
         except Exception as e:
-            print(f"Falló la conexión con {config_type}: {e}\n")
-            last_error = e
-            # Si falla, el bucle 'continue' pasa a la siguiente cadena de la lista
+            error_str = f"Falló el intento con '{config_type}': {e}"
+            print(error_str + "\n")
+            error_messages.append(error_str)
 
     # Si el bucle termina, significa que todas las conexiones fallaron.
-    print("Todas las configuraciones de conexión fallaron.")
-    st.error(f"No se pudo conectar a la base de datos. Último error: {last_error}")
+    if error_messages:
+        full_error_message = "No se pudo conectar a la base de datos. Se intentaron las siguientes configuraciones:\n\n" + "\n\n".join(error_messages)
+        st.error(full_error_message)
+    
     return None
 
 
