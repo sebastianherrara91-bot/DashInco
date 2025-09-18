@@ -17,7 +17,7 @@ def get_connection():
     #[ODBC Driver 18 for SQL Server]
     # Lista de cadenas de conexión a probar, en orden de preferencia
     connection_strings_to_try = [
-        (f"mssql+pyodbc://{U}:{quoted_pwd}@{S}/{D}?driver=ODBC+Driver+18+for+SQL+Server", "Linux"),
+        (f"mssql+pyodbc://{U}:{quoted_pwd}@{S}/{D}?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes", "Linux"),
         (f"mssql+pyodbc://{U}:{quoted_pwd}@{S}/{D}?driver=SQL+Server", "Windows")
     ]
 
