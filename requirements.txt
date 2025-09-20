@@ -5,4 +5,4 @@ pyodbc>=4.0.0
 openpyxl
 numpy
 sqlalchemy
-streamlit-elements
+streamlit-elementspython-dotenv

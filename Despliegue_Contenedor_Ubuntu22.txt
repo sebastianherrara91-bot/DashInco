@@ -1,0 +1,206 @@
+==================================================================================
+Guía de Despliegue en Contenedor (LXC) con Ubuntu 22.04 LTS
+==================================================================================
+
+OBJETIVO: Instalar la aplicación de forma rápida y eficiente en un contenedor Proxmox,
+aprovechando las correcciones de código que ya están en GitHub.
+
+---
+### Parte 1: Creación del Contenedor (LXC) en Proxmox
+---
+
+1.  **Crear el Contenedor (CT):**
+    *   En la interfaz de Proxmox, haz clic en el botón azul "Create CT".
+    *   **Pestaña General:** Dale un nombre (ej: `dash-inco-ct`) y una contraseña de `root`.
+    *   **Pestaña Template:** Selecciona el almacenamiento y la plantilla de `ubuntu-22.04`.
+    *   **Pestañas de Recursos:** 1 CPU, 1024MB de RAM y 8GB de disco es un buen punto de partida.
+    *   **Pestaña Network:** Configura una IP estática para no tener que buscarla cada vez.
+        *   **IPv4:** Cambia a `Static`.
+        *   **IPv4/CIDR:** Escribe una IP libre de tu red (ej: `192.168.1.211/24`).
+        *   **Gateway:** Escribe la IP de tu router (ej: `192.168.1.1`).
+    *   **Pestaña DNS:** Puedes dejar los valores del host o poner `8.8.8.8`.
+    *   **Pestaña Confirm:** Revisa y finaliza la creación.
+
+2.  **Iniciar el Contenedor:**
+    *   Una vez creado, selecciónalo en Proxmox e inícialo con `Start`.
+    *   Abre su consola haciendo clic en `>_ Console`.
+    *   Inicia sesión con el usuario `root` y la contraseña que definiste.
+
+---
+### Parte 2: Preparación del Sistema e Instalación de Dependencias
+---
+
+**Nota:** Como estás como `root`, no necesitas usar `sudo` para los comandos.
+
+1.  **Actualizar el sistema:**
+    ```bash
+    apt-get update && apt-get upgrade -y
+    ```
+
+2.  **Instalar herramientas base:**
+    ```bash
+    apt-get install -y git python3-pip python3-venv nginx curl gnupg unixodbc-dev odbcinst
+    ```
+
+3.  **Instalar el Driver de Microsoft SQL Server para Ubuntu 22.04:**
+    ```bash
+    # Añadir la llave de confianza de Microsoft
+    curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg
+
+    # Añadir el repositorio de Microsoft para Ubuntu 22.04 (Jammy)
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" | tee /etc/apt/sources.list.d/mssql-release.list
+
+    # Actualizar la lista de software e instalar el driver
+    apt-get update
+    ACCEPT_EULA=Y apt-get install -y msodbcsql18
+    ```
+
+4.  **Configuración Manual del Driver (Paso de seguridad):**
+    Este comando asegura que el sistema sepa dónde encontrar el driver. usar solo si no encuentra nada el comando "odbcinst -q -d"
+
+    Validar si el Driver esta correctamente Instalado.
+    odbcinst -q -d
+
+    ```bash
+    printf "[ODBC Driver 18 for SQL Server]\nDescription=Microsoft ODBC Driver 18 for SQL Server\nDriver=/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.5.so.1.1\nUsageCount=1\n" | tee /etc/odbcinst.ini > /dev/null
+    ```
+
+5.  **Verificar que el driver está instalado correctamente:**
+    ```bash
+    odbcinst -q -d
+    ```
+    La salida debe ser: `[ODBC Driver 18 for SQL Server]`
+
+---
+### Parte 3: Preparar la Aplicación
+---
+
+1.  **Descargar el código del proyecto:**
+    ```bash
+    cd /opt
+    git clone https://github.com/sebastianherrara91-bot/DashInco.git
+    ```
+
+2.  **Crear el Archivo de Credenciales (.env):**
+    Este paso es CRÍTICO para la seguridad. Crearemos un archivo `.env` que contendrá las contraseñas y que será ignorado por Git.
+    ```bash
+    cd /opt/DashInco
+    nano .env
+    ```
+    Dentro del editor `nano`, pega el siguiente contenido, reemplazando con tus credenciales reales:
+    ```
+    # Credenciales para la conexión a la base de datos reemplace los datos
+    DB_SERVER=IP del SQL SERVER
+    DB_DATABASE=Nombre de la Base de Datos
+    DB_USER=Usuario de la Base de Datos
+    DB_PASSWORD=Contraseña de la Base de Datos
+    ```
+    Guarda y cierra el archivo (Ctrl+X, luego 'Y', luego Enter).
+
+3.  **Crear el entorno de Python e instalar librerías:**
+    ```bash
+    cd /opt/DashInco 
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    deactivate
+    ```
+    *La nueva librería `python-dotenv` se instalará automáticamente para leer tu archivo `.env`.*
+
+---
+### Parte 4: Crear el Servicio Automático (systemd)
+---
+
+1.  **Crear el archivo de servicio:**
+    ```bash
+    nano /etc/systemd/system/streamlit.service
+    ```
+
+2.  **Pega el siguiente contenido exacto:**
+    ```ini
+    [Unit]
+    Description=Servicio para la app de Streamlit DashInco
+    After=network.target
+
+    [Service]
+    User=root
+    WorkingDirectory=/opt/DashInco
+    ExecStart=/opt/DashInco/venv/bin/streamlit run init.py --server.port=8501 --server.headless=true
+    Restart=always
+
+    [Install]
+    WantedBy=multi-user.target
+    ```
+
+    Oprimir "Contral+K" luego "Y" y por ultimo "enter" para que guarde 
+
+3.  **Activar y arrancar el servicio:**
+    ```bash
+    systemctl daemon-reload
+    systemctl enable streamlit.service
+    systemctl start streamlit.service
+    ```
+
+4.  **Verificar que está corriendo:**
+    ```bash
+    systemctl status streamlit.service
+    ```
+    Deberías ver un punto verde y el estado `active (running)`.
+
+---
+### Parte 5: Configurar Nginx
+---
+
+1.  **Crea el archivo de configuración de Nginx para el sitio:**
+    ```bash
+    nano /etc/nginx/sites-available/dashinco
+    ```
+
+2.  **Pega esto** (reemplaza `TU_IP_PUBLICA_O_DOMINIO` con tu IP pública o la IP del contenedor si solo es para uso local):
+    ```nginx
+    server {
+        listen 80;
+        server_name 186.31.65.250;
+
+        location / {
+            proxy_pass http://127.0.0.1:8501;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_read_timeout 86400;
+        }
+    }
+    ```
+
+3.  **Activar la nueva configuración y reiniciar Nginx:**
+    ```bash
+    ln -s /etc/nginx/sites-available/dashinco /etc/nginx/sites-enabled/
+    rm /etc/nginx/sites-enabled/default
+    nginx -t
+    systemctl restart nginx
+    ```
+
+    no hace falta abrir puertos en el Firewall del Contenedor, eso lo gestiona proxmox
+
+    Validar ip y Puerto del servicio 
+    systemctl status streamlit.service
+____________________________________________________________________________________________________________________________________________________________
+
+---
+### Parte 6: Firewall y Acceso Final
+---
+
+1.  **Instalar y configurar el Firewall (UFW):**
+    ```bash
+    apt-get install ufw -y
+    ufw allow 22/tcp  # Permite acceso SSH si lo necesitas
+    ufw allow 80/tcp  # Permite el tráfico web a Nginx
+    ufw enable      # Activa el firewall (presiona 'y' para confirmar)
+    ```
+
+2.  **Acceso:**
+    *   **Para acceso local:** Usa `http://<IP_DEL_CONTENEDOR>` (ej: `http://192.168.1.211`).
+    *   **Para acceso desde internet:** Configura el Port Forwarding en tu router para que el tráfico del puerto 80 externo apunte a la IP de tu contenedor.
+
+¡Listo! Este proceso debería ser mucho más fluido. 

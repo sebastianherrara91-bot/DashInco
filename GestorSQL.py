@@ -3,30 +3,37 @@ import pandas as pd
 import streamlit as st
 from pathlib import Path
 import urllib
+import os
+from dotenv import load_dotenv
 
-#st.cache_resource
+# Cargar las variables de entorno desde el archivo .env
+load_dotenv()
+
 def get_connection():
+    # Cargar credenciales desde las variables de entorno
+    DB_SERVER = os.getenv("DB_SERVER")
+    DB_DATABASE = os.getenv("DB_DATABASE")
+    DB_USER = os.getenv("DB_USER")
+    DB_PASSWORD = os.getenv("DB_PASSWORD")
 
-    S='186.31.65.250'
-    D='DWH_INCO'
-    U='User_Conect3'
-    P='P3p3Inc004'
+    # Validar que todas las credenciales se hayan cargado
+    if not all([DB_SERVER, DB_DATABASE, DB_USER, DB_PASSWORD]):
+        st.error("Error de configuración: Faltan una o más credenciales de la base de datos en el archivo .env. Por favor, créelo en el servidor.")
+        return None
 
-    quoted_pwd = urllib.parse.quote_plus(P)
+    quoted_pwd = urllib.parse.quote_plus(DB_PASSWORD)
 
-    #[ODBC Driver 18 for SQL Server]
-    # Lista de cadenas de conexión a probar, en orden de preferencia
+    # Lista de cadenas de conexión a probar
     connection_strings_to_try = [
-        (f"mssql+pyodbc://{U}:{quoted_pwd}@{S}/{D}?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes", "Linux"),
-        (f"mssql+pyodbc://{U}:{quoted_pwd}@{S}/{D}?driver=SQL+Server", "Windows")
+        (f"mssql+pyodbc://{DB_USER}:{quoted_pwd}@{DB_SERVER}/{DB_DATABASE}?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes", "Linux"),
+        (f"mssql+pyodbc://{DB_USER}:{quoted_pwd}@{DB_SERVER}/{DB_DATABASE}?driver=SQL+Server", "Windows")
     ]
 
     error_messages = []
     for conn_str, config_type in connection_strings_to_try:
         try:
             print(f"Intentando conectar con la configuración de {config_type}...")
-            engine = create_engine(conn_str)
-            # Intentamos una conexión real para validar
+            engine = create_engine(conn_str, connect_args={"timeout": 5})
             with engine.connect():
                 print(f"¡Conexión exitosa con la configuración de {config_type}!")
                 return engine
@@ -35,13 +42,11 @@ def get_connection():
             print(error_str + "\n")
             error_messages.append(error_str)
 
-    # Si el bucle termina, significa que todas las conexiones fallaron.
     if error_messages:
         full_error_message = "No se pudo conectar a la base de datos. Se intentaron las siguientes configuraciones:\n\n" + "\n\n".join(error_messages)
         st.error(full_error_message)
     
     return None
-
 
 def test_connection():
     """Función para probar la conexión"""
@@ -65,7 +70,6 @@ def cargar_consulta_sql(nombre_archivo):
         st.error(f"Error al cargar la consulta SQL: {str(e)}")
         return ""
 
-
 def obtener_datos_desde_sql(conexion, consulta_sql):
     """Ejecuta una consulta SQL y devuelve un DataFrame"""
     try:
@@ -74,23 +78,22 @@ def obtener_datos_desde_sql(conexion, consulta_sql):
         st.error(f"Error al ejecutar la consulta: {str(e)}")
         return pd.DataFrame()
 
-
 @st.cache_data
 def get_dataframe(consulta_sql):
     try:
-        # Obtener la conexión
         engine = get_connection()
         if engine is None:
-            st.error("No se pudo establecer la conexión con la base de datos.")
+            # get_connection ya muestra un error detallado
             return pd.DataFrame()
         
-        # Consulta SQL
         query = cargar_consulta_sql(consulta_sql)
-        
-        # Cargar directamente en un DataFrame
+        if not query:
+            return pd.DataFrame()
+            
         df = obtener_datos_desde_sql(engine, query)
         return df
         
     except Exception as e:
         st.error(f"Error al obtener datos: {str(e)}")
         return pd.DataFrame()  # Retorna un DataFrame vacío en caso de error
+

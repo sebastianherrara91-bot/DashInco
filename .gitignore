@@ -10,3 +10,7 @@ Conexion.json
 
 # Archivos temporales
 Temporal/
+.env
+
+# Memoria de Gemini
+GEMINI.md

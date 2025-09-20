@@ -7,12 +7,6 @@ import GraficaBarraDoble as GBD
 import io
 from datetime import datetime
 
-st.set_page_config(
-    page_title="Ventas por Color",
-    page_icon=":bar_chart:", 
-    layout="wide" # layout="wide" para que se adapte al ancho de la pantalla
-    )
-
 # Función para convertir el df a un archivo excel en memoria
 def to_excel(df):
     output = io.BytesIO()
