@@ -98,7 +98,8 @@ def main(DataF):
 
             # Solo proceder si tenemos datos para graficar
             if not df_chart.empty:
-                # 2. Llamamos a la función reutilizable para crear la gráfica
+                
+                # 3. Llamamos a la función reutilizable para crear la gráfica (sin título)
                 fig = GBD.crear_grafica_barra_doble_horizontal(
                     dataframe=df_chart,
                     eje_y_col='COLOR',
@@ -107,7 +108,7 @@ def main(DataF):
                     color_hex_col='Color_Hexa',
                     custom_data_col1='Cant_Venta',
                     custom_data_col2='Cant_stock',
-                    titulo=f"{local[0]} - {local[1][5:]}",  # el [5:] quita los primeros 5 caracteres
+                    titulo=f"{local[0]} - {local[1][5:]}",  # Título vacío para que no se muestre en la gráfica
                     nombre_barra1="% Venta",
                     nombre_barra2="% Stock",
                     titulo_eje_x="",
@@ -115,8 +116,9 @@ def main(DataF):
                     height=500
                 )
 
-                # 3. Mostramos el gráfico en Streamlit
-                st.plotly_chart(fig, use_container_width=True)
+                # 4. Mostramos el gráfico en Streamlit con configuración para deshabilitar zoom
+                # 4. Mostramos el gráfico en Streamlit con configuración para deshabilitar zoom y la barra de modo
+                st.plotly_chart(fig, use_container_width=True, config={'scrollZoom': False, 'displayModeBar': False})
             else:
                 st.warning("No hay datos suficientes para generar el gráfico de participación por color después de aplicar los filtros.")
         # FIN: Gráfico de Barras___________________________________________________________________________________________________________

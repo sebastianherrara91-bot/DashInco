@@ -49,7 +49,7 @@ def crear_grafica_barra_doble_horizontal(
         marker_color=dataframe[color_hex_col],
         marker_line_color='black',
         marker_line_width=1,
-        hovertemplate=f'<b>%{{y}}</b><br><b>{nombre_barra1}:</b> %{{x:.2f}}%<br><b>Unidades:</b> %{{customdata:,}}<extra></extra>',
+        hovertemplate=f'<b>%{{y}}</b><br><b>{nombre_barra1}:</b> %{{x:.2f }}%<br><b>Unidades:</b> %{{customdata:,}}<extra></extra>',
         text=dataframe[eje_x_col1].apply(lambda x: f'{x:.1f}%'),
         textposition='outside'
     ))
@@ -64,30 +64,35 @@ def crear_grafica_barra_doble_horizontal(
         marker_color=dataframe[color_hex_col],
         marker_line_color='black',
         marker_line_width=1,
-        hovertemplate=f'<b>%{{y}}</b><br><b>{nombre_barra2}:</b> %{{x:.2f}}%<br><b>Unidades:</b> %{{customdata:,}}<extra></extra>',
+        hovertemplate=f'<b>%{{y}}</b><br><b>{nombre_barra2}:</b> %{{x:.2f }}%<br><b>Unidades:</b> %{{customdata:,}}<extra></extra>',
         text=dataframe[eje_x_col2].apply(lambda x: f'{x:.1f}%'),
         textposition='outside'
     ))
 
-    # --- Layout ---
+    # --- Layout --- 
     fig.update_layout(
-        template='plotly_white',
-        showlegend=False,
-        height=800,
-        barmode='group',
-        yaxis_title=titulo_eje_y,
-        xaxis_title=titulo_eje_x,
+        template='plotly_white',                # Tema visual de la gráfica (fondo blanco, etc.)
+        showlegend=False,                       # Oculta la leyenda (ej: la caja que dice '% Venta', '% Stock')
+        height=height,                          # Altura total de la gráfica en píxeles
+        barmode='group',                        # Modo de las barras. 'group' las pone una al lado de la otra.
+        yaxis_title=titulo_eje_y,               # Título del eje Y (vertical)
+        xaxis_title=titulo_eje_x,               # Título del eje X (horizontal)
         title=dict(
-            text=f"<b>{titulo}</b>",
-            x=0.5,
-            font=dict(size=20)
+            text=f"<b>{titulo}</b>",            # Texto del título principal
+            x=0.2,                              # Posición horizontal del título (0.5 es el centro)
+            font=dict(size=20)                  # Tamaño de la fuente del título
         ),
-        font=dict(family="sans-serif", size=12),
-        yaxis=dict(categoryorder='total ascending', showgrid=False),
-        xaxis=dict(showgrid=False, gridwidth=0, gridcolor='LightGray'),
-        margin=dict(l=0, r=0, t=30, b=0),
-        bargap=0.15,
-        bargroupgap=0.1
+        font=dict(family="sans-serif", size=10),  # Fuente y tamaño de letra para todo el gráfico
+        yaxis=dict(
+            categoryorder='total ascending',    # Ordena las categorías en el eje Y de menor a mayor
+            showgrid=False,
+            visible=False                      # Oculta las líneas de la cuadrícula vertical
+        ),
+        xaxis=dict(visible=False),              # Oculta completamente el eje X (línea, números y título)
+        margin=dict(l=20, r=20, t=35, b=0),    # Márgenes (left, right, top, bottom) en píxeles
+        bargap=0.15,                            # Espacio entre barras de la misma categoría (si hubiera más)
+        bargroupgap=0.1,                        # Espacio entre grupos de barras (ej: entre 'BLANCO' y 'NEGRO')
+        dragmode=False                          # Desactiva el poder 'arrastrar' la gráfica, para mejorar el scroll en móviles
     )
 
     fig.update_traces(textfont_size=10, textangle=0, textposition='outside')

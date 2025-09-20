@@ -3,14 +3,26 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import GestorSQL as GSQL
-import Ventas_por_color as VPC
+import MD_Ventas_por_color as VPC
 import StreamlitElements as SE
 
 st.set_page_config(
     page_title="Ventas_Inco",
-    page_icon=":bar_chart:", 
+    page_icon=":bar_chart:",
     layout="wide" # layout="wide" para que se adapte al ancho de la pantalla
     )
+
+# Inyectar CSS para forzar la reducción de márgenes laterales
+st.markdown("""
+    <style>
+        .block-container {
+            padding-left: 2rem !important;
+            padding-right: 2rem !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+#padding-top: 2rem !important;
 
 def main():
 
