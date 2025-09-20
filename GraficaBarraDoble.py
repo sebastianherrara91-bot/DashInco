@@ -91,7 +91,7 @@ def crear_grafica_barra_doble_horizontal(
         xaxis=dict(visible=False),              # Oculta completamente el eje X (línea, números y título)
         margin=dict(l=20, r=20, t=35, b=0),    # Márgenes (left, right, top, bottom) en píxeles
         bargap=0.15,                            # Espacio entre barras de la misma categoría (si hubiera más)
-        bargroupgap=0.1,                        # Espacio entre grupos de barras (ej: entre 'BLANCO' y 'NEGRO')
+        bargroupgap=0.15,                        # Espacio entre grupos de barras (ej: entre 'BLANCO' y 'NEGRO')
         dragmode=False                          # Desactiva el poder 'arrastrar' la gráfica, para mejorar el scroll en móviles
     )
 
