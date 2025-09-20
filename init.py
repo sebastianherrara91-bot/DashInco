@@ -4,6 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import GestorSQL as GSQL
 import MD_Ventas_por_color as VPC
+import MD_Ventas_por_talla as VPT
 import StreamlitElements as SE
 
 st.set_page_config(
@@ -34,9 +35,12 @@ def main():
     
     if not dfv.empty:
         #st.dataframe(dfv, use_container_width=True, height=500)
-        if selec == "Ventas por color": VPC.main(dfv.groupby(['Ini_Cliente', 'Tipo_Programa','C_L','Local','Ciudad','Marca', 'Fecha', 'Fit_Estilo', 'COLOR', 'C_Color','Color_Hexa'],dropna=False).agg({'Cant_Venta': 'sum','Cant_stock': 'sum'}).reset_index())
-        elif selec == "Ventas por talla": VPC.dashboard_por_talla(dfv)
-        elif selec == "Ventas por Arte": SE.StreamElement()            
+        if selec == "Ventas por color": 
+            VPC.main(dfv.groupby(['Ini_Cliente', 'Tipo_Programa','C_L','Local','Ciudad','Marca', 'Fecha', 'Fit_Estilo', 'COLOR', 'C_Color','Color_Hexa'],dropna=False).agg({'Cant_Venta': 'sum','Cant_stock': 'sum'}).reset_index())
+        elif selec == "Ventas por talla": 
+            VPT.main(dfv.groupby(['Ini_Cliente', 'Tipo_Programa','C_L','Local','Ciudad','Marca', 'Fecha', 'Fit_Estilo', 'Talla'],dropna=False).agg({'Cant_Venta': 'sum','Cant_stock': 'sum'}).reset_index())
+        elif selec == "Ventas por Arte": 
+            SE.StreamElement()            
     else:
         st.warning("No se pudieron cargar los datos")
     

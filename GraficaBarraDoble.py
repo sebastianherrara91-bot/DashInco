@@ -6,12 +6,12 @@ def crear_grafica_barra_doble_horizontal(
     eje_y_col: str,
     eje_x_col1: str,
     eje_x_col2: str,
-    color_hex_col: str,
     custom_data_col1: str,
     custom_data_col2: str,
     titulo: str,
     nombre_barra1: str,
     nombre_barra2: str,
+    color_hex_col: str = None, # Parámetro de color ahora es opcional
     titulo_eje_x: str = "Valor",
     titulo_eje_y: str = "Categoría",
     height: int = 1000
@@ -24,7 +24,7 @@ def crear_grafica_barra_doble_horizontal(
         eje_y_col (str): Nombre de la columna para el eje Y (categorías).
         eje_x_col1 (str): Nombre de la columna para los valores de la primera barra.
         eje_x_col2 (str): Nombre de la columna para los valores de la segunda barra.
-        color_hex_col (str): Nombre de la columna con los códigos de color hexadecimales.
+        color_hex_col (str, optional): Columna con colores. Si es None, usa un color por defecto.
         custom_data_col1 (str): Columna con datos extra para el hover de la barra 1.
         custom_data_col2 (str): Columna con datos extra para el hover de la barra 2.
         titulo (str): Título principal del gráfico.
@@ -39,6 +39,9 @@ def crear_grafica_barra_doble_horizontal(
     """
     fig = go.Figure()
 
+    # Define el color de la barra: usa la columna de color si existe, si no, un gris por defecto.
+    bar_color = dataframe[color_hex_col] if color_hex_col is not None else '#888888'
+
     # --- Barra 1 ---
     fig.add_trace(go.Bar(
         x=dataframe[eje_x_col1],
@@ -46,10 +49,10 @@ def crear_grafica_barra_doble_horizontal(
         orientation='h',
         name=nombre_barra1,
         customdata=dataframe[custom_data_col1],
-        marker_color=dataframe[color_hex_col],
+        marker_color=bar_color,
         marker_line_color='black',
         marker_line_width=1,
-        hovertemplate=f'<b>%{{y}}</b><br><b>{nombre_barra1}:</b> %{{x:.2f }}%<br><b>Unidades:</b> %{{customdata:,}}<extra></extra>',
+        hovertemplate=f'<b>%{{y}}</b><br><b>{nombre_barra1}:</b> %{{x:.2f}}%<br><b>Unidades:</b> %{{customdata:,}}<extra></extra>',
         text=dataframe[eje_x_col1].apply(lambda x: f'{x:.1f}%'),
         textposition='outside'
     ))
@@ -61,10 +64,10 @@ def crear_grafica_barra_doble_horizontal(
         orientation='h',
         name=nombre_barra2,
         customdata=dataframe[custom_data_col2],
-        marker_color=dataframe[color_hex_col],
+        marker_color=bar_color,
         marker_line_color='black',
         marker_line_width=1,
-        hovertemplate=f'<b>%{{y}}</b><br><b>{nombre_barra2}:</b> %{{x:.2f }}%<br><b>Unidades:</b> %{{customdata:,}}<extra></extra>',
+        hovertemplate=f'<b>%{{y}}</b><br><b>{nombre_barra2}:</b> %{{x:.2f}}%<br><b>Unidades:</b> %{{customdata:,}}<extra></extra>',
         text=dataframe[eje_x_col2].apply(lambda x: f'{x:.1f}%'),
         textposition='outside'
     ))
