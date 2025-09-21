@@ -82,7 +82,7 @@ def main(DataF):
         Columna_Actual = columnas[indice % 3]#Seleccionamos la columna actual
 
         with Columna_Actual:
-            df_local = df_ParaFor[df_ParaFor['Local'] == local[0]] 
+            df_local = df_ParaFor[df_ParaFor['Local'] == local[0]].copy() 
             df_local = df_local.groupby(['COLOR', 'Color_Hexa']).agg({'Cant_Venta': 'sum', 'Cant_stock': 'sum'}).reset_index()
             T_Venta = df_local['Cant_Venta'].sum()
             T_Stock = df_local['Cant_stock'].sum()
@@ -113,7 +113,7 @@ def main(DataF):
                     nombre_barra2="% Stock",
                     titulo_eje_x="",
                     titulo_eje_y="",
-                    height=500
+                    height=800
                 )
 
                 # 4. Mostramos el gráfico en Streamlit con configuración para deshabilitar zoom

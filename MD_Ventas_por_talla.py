@@ -17,58 +17,75 @@ def main(DataF):
         ("Semana", "Fecha", True)
     ]
 
-    df_filtrado = DataF.copy()
+    df_filtroTL = DataF.copy()
 
+        # Bucle para Filtros de Selección ÚNICA (selectbox)___________________________________________________________________________________________________________
     for titulo, columna, orden in filtros_selectbox:
-        opciones = ['Todos'] + sorted(list(df_filtrado[columna].unique()), reverse=orden)
-        seleccion = st.sidebar.selectbox(f"{titulo} (Tallas)", opciones, key=f"sb_{columna}_tallas")
+        opciones = ['Todos'] + sorted(list(df_filtroTL[columna].unique()), reverse=orden)
+        seleccion = st.sidebar.selectbox(titulo, opciones)
         if seleccion != 'Todos':
-            df_filtrado = df_filtrado[df_filtrado[columna] == seleccion]
+            df_filtroTL = df_filtroTL[df_filtroTL[columna] == seleccion]
 
+    # Bucle para Filtros de Selección MÚLTIPLE (multiselect)___________________________________________________________________________________________________________
     for titulo, columna, orden in filtros_multiselect:
-        opciones = sorted(list(df_filtrado[columna].unique()), reverse=orden)
-        selecciones = st.sidebar.multiselect(f"{titulo} (Tallas)", opciones, key=f"ms_{columna}_tallas")
+        opciones = sorted(list(df_filtroTL[columna].unique()), reverse=orden)
+        selecciones = st.sidebar.multiselect(titulo, opciones)
         if selecciones:
-            df_filtrado = df_filtrado[df_filtrado[columna].isin(selecciones)]
+            df_filtroTL = df_filtroTL[df_filtroTL[columna].isin(selecciones)]
 
     # --- Lógica de Filtro de Participación --- #
     # Se calcula la participación total por talla sobre los datos ya filtrados por el usuario
-    df_calculos = df_filtrado.groupby(['Talla'], dropna=False).agg({'Cant_Venta': 'sum', 'Cant_stock': 'sum'}).reset_index()
-    df_calculos['Total_Unidades'] = df_calculos['Cant_Venta'] + df_calculos['Cant_stock']
-    total_unidades_global = df_calculos['Total_Unidades'].sum()
-    df_calculos['%_Participacion_Total'] = (df_calculos['Total_Unidades'] / total_unidades_global) * 100 if total_unidades_global else 0
+    df_calculosTL = df_filtroTL.groupby(['Talla'], dropna=False).agg({'Cant_Venta': 'sum', 'Cant_stock': 'sum'}).reset_index()
+    df_calculosTL['Total_Unidades'] = df_calculosTL['Cant_Venta'] + df_calculosTL['Cant_stock']
+    total_unidades_global = df_calculosTL['Total_Unidades'].sum()
+    df_calculosTL['%_Participacion_Total'] = (df_calculosTL['Total_Unidades'] / total_unidades_global) * 100 if total_unidades_global else None
 
     slider = st.sidebar.slider(
         "Quitar % participacion menor a:",
-        min_value=0.00, max_value=10.00, value=0.0, step=0.50,
-        format="%.2f%%", key="slider_participacion_tallas"
+        min_value=0.00, 
+        max_value=10.00, 
+        value=0.50, 
+        step=0.50,
+        format="%.2f%%", 
     )
     
-    tallas_a_mantener = df_calculos[df_calculos['%_Participacion_Total'] >= slider]['Talla']
-    df_filtrado = df_filtrado[df_filtrado['Talla'].isin(tallas_a_mantener)]
+    st.sidebar.write(f'Quitar menor a {slider} % de participación')    
+    df_calculosTL = df_calculosTL[df_calculosTL['%_Participacion_Total'] >= slider]
+    tallas = df_calculosTL['Talla'].unique().tolist()
+
+    df_filtroTL = df_filtroTL[df_filtroTL['Talla'].isin(tallas)]
 
     # --- Lógica de Ordenamiento Personalizado para Tallas ---
-    if not df_filtrado.empty:
-        tallas_letras_orden = ['XXL', 'XL', 'L', 'M', 'S', 'XS', 'XXS']
-        tallas_unicas = df_filtrado['Talla'].unique()
+    if not df_filtroTL.empty:
+        # Define el orden de tallas personalizado completo.
+        orden_tallas_personalizado = [
+            'XXL','XL','L','M','S','SX','XXS','50','49','48','47','46','45','44',
+            '43','42','41','40','39','38','37','36','35','34','33','32','31','30',
+            '29','28','27','26','25','24','23','22','21','20','19','18','17','16',
+            '15','14','13','12','11','10','9','8','7','6','5','4','3','2','1','20M',
+            '19M','18M','17M','16M','15M','14M','13M','12M','11M','10M','9M','8M',
+            '7M','6M','5M','4M','3M','2M','1M','0M','U'
+        ]
+        orden_tallas_personalizado = orden_tallas_personalizado[::-1]
+
+        # Convierte la columna de tallas a string para una comparación consistente.
+        df_filtroTL['Talla'] = df_filtroTL['Talla'].astype(str)
         
-        tallas_letras = [t for t in tallas_unicas if str(t).upper() in tallas_letras_orden]
-        tallas_numeros = [t for t in tallas_unicas if str(t).upper() not in tallas_letras_orden]
-
-        tallas_letras_sorted = sorted(tallas_letras, key=lambda x: tallas_letras_orden.index(str(x).upper()))
+        # Obtiene las tallas únicas presentes en el DataFrame filtrado.
+        tallas_unicas_df = set(df_filtroTL['Talla'].unique())
         
-        def safe_float(num):
-            try: return float(num)
-            except (ValueError, TypeError): return float('inf')
-
-        tallas_numeros_sorted = sorted(tallas_numeros, key=safe_float)
-
-        orden_final_tallas = tallas_letras_sorted + tallas_numeros_sorted
+        # Filtra la lista de orden personalizado para incluir solo las tallas que existen en el DataFrame.
+        # Esto mantiene el orden deseado y asegura que no haya errores si faltan algunas tallas.
+        orden_final_tallas = [talla for talla in orden_tallas_personalizado if talla in tallas_unicas_df]
+        
+        # Crea el tipo categórico con el orden personalizado.
         talla_cat_type = CategoricalDtype(categories=orden_final_tallas, ordered=True)
-        df_filtrado['Talla'] = df_filtrado['Talla'].astype(talla_cat_type)
+        
+        # Aplica el tipo categórico a la columna 'Talla'.
+        df_filtroTL['Talla'] = df_filtroTL['Talla'].astype(talla_cat_type)
 
     # --- Preparación y visualización de gráficos --- #
-    Locales = df_filtrado[['Local', 'Ciudad']].drop_duplicates().sort_values(by=['Ciudad', 'Local']).values.tolist()
+    Locales = df_filtroTL[['Local', 'Ciudad']].drop_duplicates().sort_values(by=['Ciudad', 'Local']).values.tolist()
 
     Colu1, Colu2, Colu3 = st.columns(3)
     columnas = [Colu1, Colu2, Colu3]
@@ -76,14 +93,14 @@ def main(DataF):
     for indice, local in enumerate(Locales):
         Columna_Actual = columnas[indice % 3]
         with Columna_Actual:
-            df_local = df_filtrado[df_filtrado['Local'] == local[0]].copy()
-            
+            df_local = df_filtroTL[df_filtroTL['Local'] == local[0]].copy()
+            df_local = df_local.groupby(['Talla']).agg({'Cant_Venta': 'sum', 'Cant_stock': 'sum'}).reset_index()
             T_Venta = df_local['Cant_Venta'].sum()
             T_Stock = df_local['Cant_stock'].sum()
             df_local['%_Participacion_Venta'] = (df_local['Cant_Venta'] / T_Venta) * 100 if T_Venta else 0
             df_local['%_Participacion_Stock'] = (df_local['Cant_stock'] / T_Stock) * 100 if T_Stock else 0
 
-            df_local = df_local.sort_values(by='Talla')
+            df_local = df_local.sort_values(by='Talla') #Orden personalizado sado por orden_tallas_personalizado
 
             if not df_local.empty:
                 st.subheader(f"{local[0]} - {local[1][5:]}")
@@ -98,6 +115,6 @@ def main(DataF):
                     titulo="",
                     nombre_barra1="% Venta",
                     nombre_barra2="% Stock",
-                    height=400
+                    height=500
                 )
-                st.plotly_chart(fig, use_container_width=True, config={'scrollZoom': False, 'displayModeBar': False}, key=f"talla_chart_{indice}")
+                st.plotly_chart(fig, use_container_width=True, config={'scrollZoom': False, 'displayModeBar': False})

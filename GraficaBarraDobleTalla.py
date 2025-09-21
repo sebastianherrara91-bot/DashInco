@@ -30,9 +30,9 @@ def crear_grafica_barra_doble_horizontal(
         marker_color='#A9A9A9',  # Gris oscuro
         marker_line_color='#333333', # Borde más oscuro
         marker_line_width=1,
-        hovertemplate=f'<b>%{{y}}</b><br><b>{nombre_barra1}:</b> %{{x:.2f}}%<br><b>Unidades:</b> %{{customdata:,}}<extra></extra>',
+        hovertemplate=f'<b>Talla: %{{y}}</b><br><b>{nombre_barra1}:</b> %{{x:.2f}}%<br><b>Unidades:</b> %{{customdata:,}}<extra></extra>',
         text=dataframe[eje_x_col1].apply(lambda x: f'{x:.1f}%'),
-        textposition='auto' # Posición automática para evitar solapamiento
+        textposition='outside' # Posición automática para evitar solapamiento
     ))
 
     # --- Barra 2 (ej. Stock) ---
@@ -42,12 +42,12 @@ def crear_grafica_barra_doble_horizontal(
         orientation='h',
         name=nombre_barra2,
         customdata=dataframe[custom_data_col2],
-        marker_color='#D3D3D3', # Gris claro
+        marker_color='#F0F0F0', # Gris claro
         marker_line_color='#333333',
         marker_line_width=1,
-        hovertemplate=f'<b>%{{y}}</b><br><b>{nombre_barra2}:</b> %{{x:.2f}}%<br><b>Unidades:</b> %{{customdata:,}}<extra></extra>',
+        hovertemplate=f'<b>Talla: %{{y}}</b><br><b>{nombre_barra2}:</b> %{{x:.2f}}%<br><b>Unidades:</b> %{{customdata:,}}<extra></extra>',
         text=dataframe[eje_x_col2].apply(lambda x: f'{x:.1f}%'),
-        textposition='auto' # Posición automática para evitar solapamiento
+        textposition='outside' # Posición automática para evitar solapamiento
     ))
 
     # --- Layout Minimalista y Profesional ---
@@ -62,7 +62,7 @@ def crear_grafica_barra_doble_horizontal(
         xaxis=dict(visible=False), # Oculta completamente el eje X
         margin=dict(l=10, r=10, t=35, b=10),
         bargap=0.15,
-        bargroupgap=0.1,
+        bargroupgap=0.10,
         dragmode=False
     )
 

@@ -204,3 +204,6 @@ ________________________________________________________________________________
     *   **Para acceso desde internet:** Configura el Port Forwarding en tu router para que el tráfico del puerto 80 externo apunte a la IP de tu contenedor.
 
 ¡Listo! Este proceso debería ser mucho más fluido. 
+
+
+cd /opt/DashInco && git pull && source venv/bin/activate && pip install -r requirements.txt && deactivate && sudo systemctl restart streamlit.service
