@@ -14,7 +14,7 @@ def main(DataF):
     ]
     filtros_multiselect = [
         ("Fit Estilo", "Fit_Estilo", True),
-        ("Semana", "Fecha", True)
+        ("Semanas", "Semanas", True)
     ]
 
     df_filtroTL = DataF.copy()
@@ -94,7 +94,7 @@ def main(DataF):
         Columna_Actual = columnas[indice % 3]
         with Columna_Actual:
             df_local = df_filtroTL[df_filtroTL['Local'] == local[0]].copy()
-            df_local = df_local.groupby(['Talla']).agg({'Cant_Venta': 'sum', 'Cant_stock': 'sum'}).reset_index()
+            df_local = df_local.groupby(['Talla'],observed=False).agg({'Cant_Venta': 'sum', 'Cant_stock': 'sum'}).reset_index()
             T_Venta = df_local['Cant_Venta'].sum()
             T_Stock = df_local['Cant_stock'].sum()
             df_local['%_Participacion_Venta'] = (df_local['Cant_Venta'] / T_Venta) * 100 if T_Venta else 0
@@ -103,7 +103,6 @@ def main(DataF):
             df_local = df_local.sort_values(by='Talla') #Orden personalizado sado por orden_tallas_personalizado
 
             if not df_local.empty:
-                st.subheader(f"{local[0]} - {local[1][5:]}")
                 
                 fig = GBDT.crear_grafica_barra_doble_horizontal(
                     dataframe=df_local,
@@ -112,7 +111,7 @@ def main(DataF):
                     eje_x_col2='%_Participacion_Stock',
                     custom_data_col1='Cant_Venta',
                     custom_data_col2='Cant_stock',
-                    titulo="",
+                    titulo=f"{local[0]} - {local[1][5:]}",
                     nombre_barra1="% Venta",
                     nombre_barra2="% Stock",
                     height=500

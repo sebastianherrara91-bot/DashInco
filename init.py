@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import GestorSQL as GSQL
 import MD_Ventas_por_color as VPC
 import MD_Ventas_por_talla as VPT
+import MD_Ventas_por_Tienda as VPTI
 import StreamlitElements as SE
 
 st.set_page_config(
@@ -28,17 +29,20 @@ st.markdown("""
 def main():
 
     st.sidebar.header("Menu")
-    menu = st.sidebar.selectbox("Seleccionar Detalle", ["Ventas por color", "Ventas por talla", "Ventas por Arte"])
+    menu = st.sidebar.selectbox("Seleccionar Detalle", ["Ventas por Tienda", "Ventas por color", "Ventas por talla", "Ventas por Arte"])
     selec= menu
 
-    dfv = GSQL.get_dataframe("Ventas_StockUltsem.sql")
+    dfVS1 = GSQL.get_dataframe("Ventas_StockUltsem.sql")
+    dfVS8 = GSQL.get_dataframe("Ventas_Stock_8Sem.sql")
     
-    if not dfv.empty:
+    if not dfVS1.empty and not dfVS8.empty:
         #st.dataframe(dfv, use_container_width=True, height=500)
-        if selec == "Ventas por color": 
-            VPC.main(dfv.groupby(['Ini_Cliente', 'Tipo_Programa','C_L','Local','Ciudad','Marca', 'Fecha', 'Fit_Estilo', 'COLOR', 'C_Color','Color_Hexa'],dropna=False).agg({'Cant_Venta': 'sum','Cant_stock': 'sum'}).reset_index())
+        if selec == "Ventas por Tienda":
+            VPTI.main(dfVS8)
+        elif selec == "Ventas por color": 
+            VPC.main(dfVS1.groupby(['Ini_Cliente', 'Tipo_Programa','C_L','Local','Ciudad','Marca', 'Semanas', 'Fit_Estilo', 'COLOR', 'C_Color','Color_Hexa'],dropna=False).agg({'Cant_Venta': 'sum','Cant_stock': 'sum'}).reset_index())
         elif selec == "Ventas por talla": 
-            VPT.main(dfv.groupby(['Ini_Cliente', 'Tipo_Programa','C_L','Local','Ciudad','Marca', 'Fecha', 'Fit_Estilo', 'Talla'],dropna=False).agg({'Cant_Venta': 'sum','Cant_stock': 'sum'}).reset_index())
+            VPT.main(dfVS1.groupby(['Ini_Cliente', 'Tipo_Programa','C_L','Local','Ciudad','Marca', 'Semanas', 'Fit_Estilo', 'Talla'],dropna=False).agg({'Cant_Venta': 'sum','Cant_stock': 'sum'}).reset_index())
         elif selec == "Ventas por Arte": 
             SE.StreamElement()            
     else:

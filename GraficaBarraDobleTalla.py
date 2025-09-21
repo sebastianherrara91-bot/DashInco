@@ -56,8 +56,8 @@ def crear_grafica_barra_doble_horizontal(
         showlegend=False,
         height=height,
         barmode='group',
-        title=dict(text=f"<b>{titulo}</b>", x=0.5, font=dict(size=18)),
-        font=dict(family="sans-serif", size=12, color="#333333"),
+        title=dict(text=f"<b>{titulo}</b>", x=0.2, font=dict(size=20)),
+        font=dict(family="sans-serif", size=10, color="#333333"),
         yaxis=dict(showgrid=False, showline=False, showticklabels=True, categoryorder='trace'), # Ordena según el orden del dataframe
         xaxis=dict(visible=False), # Oculta completamente el eje X
         margin=dict(l=10, r=10, t=35, b=10),

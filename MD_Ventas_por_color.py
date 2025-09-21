@@ -28,7 +28,7 @@ def main(DataF):
     # Definición de Filtros de múltiples Valores Seleccionables___________________________________________________________________________________________________________
     filtros_multiselect = [
         ("Fit Estilo", "Fit_Estilo",True),
-        ("Semana", "Fecha",True)
+        ("Semanas", "Semanas",True)
     ]
 
     df_filtrado = DataF.copy() # Copia de DataFrame original para aplicar filtros
