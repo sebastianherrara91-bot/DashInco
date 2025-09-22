@@ -35,8 +35,8 @@ def main(DataF):
 
     # --- Lógica de Filtro de Participación --- #
     # Se calcula la participación total por talla sobre los datos ya filtrados por el usuario
-    df_calculosTL = df_filtroTL.groupby(['Talla'], dropna=False).agg({'Cant_Venta': 'sum', 'Cant_stock': 'sum'}).reset_index()
-    df_calculosTL['Total_Unidades'] = df_calculosTL['Cant_Venta'] + df_calculosTL['Cant_stock']
+    df_calculosTL = df_filtroTL.groupby(['Talla'], dropna=False).agg({'Cant_Venta': 'sum', 'Cant_Stock': 'sum'}).reset_index()
+    df_calculosTL['Total_Unidades'] = df_calculosTL['Cant_Venta'] + df_calculosTL['Cant_Stock']
     total_unidades_global = df_calculosTL['Total_Unidades'].sum()
     df_calculosTL['%_Participacion_Total'] = (df_calculosTL['Total_Unidades'] / total_unidades_global) * 100 if total_unidades_global else None
 
@@ -94,11 +94,11 @@ def main(DataF):
         Columna_Actual = columnas[indice % 3]
         with Columna_Actual:
             df_local = df_filtroTL[df_filtroTL['Local'] == local[0]].copy()
-            df_local = df_local.groupby(['Talla'],observed=False).agg({'Cant_Venta': 'sum', 'Cant_stock': 'sum'}).reset_index()
+            df_local = df_local.groupby(['Talla'],observed=False).agg({'Cant_Venta': 'sum', 'Cant_Stock': 'sum'}).reset_index()
             T_Venta = df_local['Cant_Venta'].sum()
-            T_Stock = df_local['Cant_stock'].sum()
+            T_Stock = df_local['Cant_Stock'].sum()
             df_local['%_Participacion_Venta'] = (df_local['Cant_Venta'] / T_Venta) * 100 if T_Venta else 0
-            df_local['%_Participacion_Stock'] = (df_local['Cant_stock'] / T_Stock) * 100 if T_Stock else 0
+            df_local['%_Participacion_Stock'] = (df_local['Cant_Stock'] / T_Stock) * 100 if T_Stock else 0
 
             df_local = df_local.sort_values(by='Talla') #Orden personalizado sado por orden_tallas_personalizado
 
@@ -110,7 +110,7 @@ def main(DataF):
                     eje_x_col1='%_Participacion_Venta',
                     eje_x_col2='%_Participacion_Stock',
                     custom_data_col1='Cant_Venta',
-                    custom_data_col2='Cant_stock',
+                    custom_data_col2='Cant_Stock',
                     titulo=f"{local[0]} - {local[1][5:]}",
                     nombre_barra1="% Venta",
                     nombre_barra2="% Stock",

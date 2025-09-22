@@ -40,9 +40,9 @@ def main():
         if selec == "Ventas por Tienda":
             VPTI.main(dfVS8)
         elif selec == "Ventas por color": 
-            VPC.main(dfVS1.groupby(['Ini_Cliente', 'Tipo_Programa','C_L','Local','Ciudad','Marca', 'Semanas', 'Fit_Estilo', 'COLOR', 'C_Color','Color_Hexa'],dropna=False).agg({'Cant_Venta': 'sum','Cant_stock': 'sum'}).reset_index())
+            VPC.main(dfVS1.groupby(['Ini_Cliente', 'Tipo_Programa','C_L','Local','Ciudad','Marca', 'Semanas', 'Fit_Estilo', 'COLOR', 'C_Color','Color_Hexa'],dropna=False).agg({'Cant_Venta': 'sum','Cant_Stock': 'sum'}).reset_index())
         elif selec == "Ventas por talla": 
-            VPT.main(dfVS1.groupby(['Ini_Cliente', 'Tipo_Programa','C_L','Local','Ciudad','Marca', 'Semanas', 'Fit_Estilo', 'Talla'],dropna=False).agg({'Cant_Venta': 'sum','Cant_stock': 'sum'}).reset_index())
+            VPT.main(dfVS1.groupby(['Ini_Cliente', 'Tipo_Programa','C_L','Local','Ciudad','Marca', 'Semanas', 'Fit_Estilo', 'Talla'],dropna=False).agg({'Cant_Venta': 'sum','Cant_Stock': 'sum'}).reset_index())
         elif selec == "Ventas por Arte": 
             SE.StreamElement()            
     else:

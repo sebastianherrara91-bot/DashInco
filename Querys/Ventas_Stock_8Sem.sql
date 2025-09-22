@@ -24,7 +24,7 @@ syv.INI_CLIENTE AS 'Ini_Cliente'
 ,syv.N_Sem
 ,syv.Ano
 ,SUM(syv.CANT) as 'Cant_Venta'
-,SUM(syv.STOCK) as 'Cant_stock'
+,SUM(syv.STOCK) as 'Cant_Stock'
 ,'PVP_Prom' = CASE WHEN SUM(syv.CANT) = 0 THEN NULL ELSE ROUND(SUM(syv.CANT * syv.PVP_UNIT)/ SUM(syv.CANT),0) END
 
 From(
