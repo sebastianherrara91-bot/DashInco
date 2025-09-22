@@ -39,11 +39,6 @@ st.markdown("""
             min-width: 400px !important;
         }
     }
-
-    /* Intento para ocultar el campo de búsqueda dentro del selectbox */
-    div[data-testid="stSelectbox"] input {
-        display: none !important;
-    }
     </style>
 """, unsafe_allow_html=True)
 
