@@ -17,10 +17,28 @@ st.set_page_config(
 # Inyectar CSS para forzar la reducción de márgenes laterales
 st.markdown("""
     <style>
+    /* Estilos para el contenedor principal */
+    .block-container {
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+    }
+
+    /* Media query para pantallas pequeñas (móviles) */
+    @media (max-width: 768px) {
         .block-container {
-            padding-left: 2rem !important;
-            padding-right: 2rem !important;
+            /* En móvil, reduce el ancho máximo para forzar el apilamiento de columnas */
+            max-width: 46rem;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
         }
+    }
+
+    /* Media query para pantallas grandes (escritorio) */
+    @media (min-width: 769px) {
+        div[data-testid="stDataFrame"] {
+            min-width: 400px !important;
+        }
+    }
     </style>
 """, unsafe_allow_html=True)
 

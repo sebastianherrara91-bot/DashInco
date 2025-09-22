@@ -88,27 +88,33 @@ def main(DataF):
     df_calculos = df_calculos.drop(columns=['sort_key'])
     max_semana = df_calculos['Semanas'].max()
 
-    Colu1, Colu2, Colu3 = st.columns(3)
-    columnas = [Colu1,Colu2,Colu3]
-    
+    Colu1, Colu2 = st.columns(2)
+    columnas = [Colu1, Colu2]
 
     for indice, local in enumerate(Locales):
-        
-        Columna_Actual = columnas[indice % 3]#Seleccionamos la columna actual
+
+        Columna_Actual = columnas[indice % 2]  # Seleccionamos la columna actual
         with Columna_Actual:
-            st.title(f"{local[0]} - {local[1][5:]}")
+
+            st.subheader(f"{local[0]}-{local[1][5:]}")
             
             df_local = df_calculos[df_calculos['Local'] == local[0]].copy()
             st.dataframe(
                 df_local[['Marca','Tipo_Programa','Fit_Estilo','Semanas','Cant_Venta','Cant_Stock','PVP_Prom','Sem_Evac']]
-                .reset_index(drop=True) #resetea el index eredado de df_local
-                .style.hide(axis="index") #unsa vez reseteado el index ya se puede ocultar para no confundir el estilos de Streamlit
+                .rename(columns={
+                    'Cant_Venta': 'C_Vnt',
+                    'Cant_Stock': 'C_Stk',
+                    'PVP_Prom': 'P_Prm',
+                    'Sem_Evac': 'S_Evc'
+                })  # <--- Añade este bloque .rename()
+                .reset_index(drop=True)
+                .style.hide(axis="index")
                 .apply(resaltar_fila_max_semana, semmax=max_semana, axis=1)
                 .format({
-                    'Cant_Venta': '{:,.0f}',
-                    'Cant_Stock': '{:,.0f}',
-                    'PVP_Prom': '$ {:,.0f}',
-                    'Sem_Evac': '{:.1f}'
+                    'C_Vnt': '{:,.0f}',
+                    'C_Stk': '{:,.0f}',
+                    'P_Prm': '$ {:,.0f}',
+                    'S_Evc': '{:.1f}'
                 })
             )
 
