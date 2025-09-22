@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+pd.set_option("styler.render.max_elements", 5419953)
 import plotly.express as px
 import plotly.graph_objects as go
 import GestorSQL as GSQL

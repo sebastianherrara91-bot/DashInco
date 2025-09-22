@@ -6,14 +6,7 @@ import numpy as np
 import GraficaBarraDoble as GBD
 import io
 from datetime import datetime
-
-# Función para convertir el df a un archivo excel en memoria
-def to_excel(df):
-    output = io.BytesIO()
-    with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False, sheet_name='Sheet1')
-    processed_data = output.getvalue()
-    return processed_data
+from excel_exporter import to_excel
 
 def main(DataF):
 
@@ -122,24 +115,23 @@ def main(DataF):
             else:
                 st.warning("No hay datos suficientes para generar el gráfico de participación por color después de aplicar los filtros.")
         # FIN: Gráfico de Barras___________________________________________________________________________________________________________
-    st.write("Datos originales")
-    st.dataframe(DataF, width='stretch', height=200)
-    excel_data = to_excel(DataF)
-    st.download_button(
-        label="📥 Descargar en Excel",
-        data=excel_data,
-        file_name=f"BD_Original_{datetime.now().strftime('%Y-%m-%d')}.xlsx", #Con fecha de hoy
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
 
     st.write("Datos filtrados")
-    st.dataframe(df_filtrado, width='stretch', height=200)
-    excel_data = to_excel(df_filtrado)
+    st.dataframe(df_filtrado.head(10), width='stretch', height=200)
+
+    if 'excel_data_color_filtered' not in st.session_state:
+        st.session_state['excel_data_color_filtered'] = b'' # Initialize with empty bytes
+
+    def generate_excel_color_filtered():
+        with st.spinner("Generando Excel de datos filtrados..."):
+            st.session_state['excel_data_color_filtered'] = to_excel(df_filtrado)
+
     st.download_button(
         label="📥 Descargar en Excel",
-        data=excel_data,
-        file_name=f"BD_Filtrada_{datetime.now().strftime('%Y-%m-%d')}.xlsx", #Con fecha de hoy
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        data=st.session_state['excel_data_color_filtered'],
+        file_name=f"BD_Filtrada_{datetime.now().strftime('%Y-%m-%d')}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        on_click=generate_excel_color_filtered
     )
 
 

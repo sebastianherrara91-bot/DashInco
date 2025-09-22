@@ -6,14 +6,7 @@ import numpy as np
 import GraficaBarraDoble as GBD
 import io
 from datetime import datetime
-
-# Función para convertir el df a un archivo excel en memoria
-def to_excel(df):
-    output = io.BytesIO()
-    with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False, sheet_name='Sheet1')
-    processed_data = output.getvalue()
-    return processed_data
+from excel_exporter import to_excel
 
 def resaltar_fila_max_semana(fila,semmax):
     # Comprueba si el valor de la columna 'Semana' en la fila actual es el máximo.
@@ -118,8 +111,10 @@ def main(DataF):
                 })
             )
 
+    st.write("Datos Originales")
+    
     st.dataframe(
-        df_calculos.reset_index(drop=True)
+        DataF.head(10).reset_index(drop=True)
         .style.hide(axis="index")
         .format({
             'Cant_Venta': '{:,.0f}',
@@ -128,8 +123,35 @@ def main(DataF):
             'Sem_Evac': '{:.1f}'
         })       
     )  
+    
+    if 'excel_data_tienda_original' not in st.session_state:
+        st.session_state['excel_data_tienda_original'] = b'' # Initialize with empty bytes
 
+    def generate_excel_tienda_original():
+        with st.spinner("Generando Excel de datos originales..."):
+            st.session_state['excel_data_tienda_original'] = to_excel(DataF)
 
+    st.download_button(
+        label="📥 Descargar en Excel",
+        data=st.session_state['excel_data_tienda_original'],
+        file_name=f"BD_Origen_{datetime.now().strftime('%Y-%m-%d')}.xlsx", #Con fecha de hoy
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        on_click=generate_excel_tienda_original
+    )
 
+    st.write("Datos filtrados")
 
+    if 'excel_data_tienda_filtered' not in st.session_state:
+        st.session_state['excel_data_tienda_filtered'] = b'' # Initialize with empty bytes
 
+    def generate_excel_tienda_filtered():
+        with st.spinner("Generando Excel de datos filtrados..."):
+            st.session_state['excel_data_tienda_filtered'] = to_excel(df_filtrado)
+
+    st.download_button(
+        label="📥 Descargar Datos Filtrados en Excel",
+        data=st.session_state['excel_data_tienda_filtered'],
+        file_name=f"BD_Filtrada_Tiendas_{datetime.now().strftime('%Y-%m-%d')}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        on_click=generate_excel_tienda_filtered
+    )
