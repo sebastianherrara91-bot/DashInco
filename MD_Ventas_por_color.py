@@ -119,20 +119,15 @@ def main(DataF):
     st.write("Datos filtrados")
     st.dataframe(df_filtrado.head(10), width='stretch', height=200)
 
-    if 'excel_data_color_filtered' not in st.session_state:
-        st.session_state['excel_data_color_filtered'] = b'' # Initialize with empty bytes
+    # --- Botón de descarga ---
+    #df_xlsx = to_excel(df_filtrado)
 
-    def generate_excel_color_filtered():
-        with st.spinner("Generando Excel de datos filtrados..."):
-            st.session_state['excel_data_color_filtered'] = to_excel(df_filtrado)
-
-    st.download_button(
+"""     st.download_button(
         label="📥 Descargar en Excel",
-        data=st.session_state['excel_data_color_filtered'],
-        file_name=f"BD_Filtrada_{datetime.now().strftime('%Y-%m-%d')}.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        on_click=generate_excel_color_filtered
-    )
+        data=to_excel(df_filtrado),
+        file_name=f"Ventas_por_color_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    ) """
 
 
 

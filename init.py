@@ -34,12 +34,12 @@ st.markdown("""
         }
     }
 
-    /* Media query para pantallas grandes (escritorio) */
-    @media (min-width: 769px) {
-        div[data-testid="stDataFrame"] {
-            min-width: 400px !important;
-        }
+    /* Reducir la altura de las filas en las tablas */
+    div[data-testid="stDataFrame"] td {
+        padding-top: 0.1rem !important;
+        padding-bottom: 0.1rem !important;
     }
+
     </style>
 """, unsafe_allow_html=True)
 

@@ -7,3 +7,4 @@ numpy
 sqlalchemy
 streamlit-elements
 python-dotenv
+xlsxwriter

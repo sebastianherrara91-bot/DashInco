@@ -78,7 +78,7 @@ def obtener_datos_desde_sql(conexion, consulta_sql):
         st.error(f"Error al ejecutar la consulta: {str(e)}")
         return pd.DataFrame()
 
-@st.cache_data
+@st.cache_data(ttl=1800)
 def get_dataframe(consulta_sql):
     try:
         engine = get_connection()

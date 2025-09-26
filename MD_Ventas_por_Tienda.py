@@ -17,6 +17,13 @@ def resaltar_fila_max_semana(fila,semmax):
         # Si no lo es, no devuelve ningún estilo.
         return [''] * len(fila)
 
+def highlight_min_non_zero(col, color):
+    # Reemplaza 0 con NaN para encontrar el mínimo de los valores distintos de cero
+    non_zero_vals = col.replace(0, np.nan)
+    min_val = non_zero_vals.min()
+    # Devuelve el estilo para el valor mínimo, por defecto para los demás
+    return [f'background-color: {color}' if v == min_val else '' for v in col]
+
 def main(DataF):
 
     st.sidebar.header("Filtros Dinámicos")
@@ -81,35 +88,34 @@ def main(DataF):
     df_calculos = df_calculos.drop(columns=['sort_key'])
     max_semana = df_calculos['Semanas'].max()
 
-    Colu1, Colu2 = st.columns(2)
-    columnas = [Colu1, Colu2]
-
     for indice, local in enumerate(Locales):
 
-        Columna_Actual = columnas[indice % 2]  # Seleccionamos la columna actual
-        with Columna_Actual:
-
-            st.subheader(f"{local[0]}-{local[1][5:]}")
-            
-            df_local = df_calculos[df_calculos['Local'] == local[0]].copy()
-            st.dataframe(
-                df_local[['Marca','Tipo_Programa','Fit_Estilo','Semanas','Cant_Venta','Cant_Stock','PVP_Prom','Sem_Evac']]
-                .rename(columns={
-                    'Cant_Venta': 'C_Vnt',
-                    'Cant_Stock': 'C_Stk',
-                    'PVP_Prom': 'P_Prm',
-                    'Sem_Evac': 'S_Evc'
-                })  # <--- Añade este bloque .rename()
-                .reset_index(drop=True)
-                .style.hide(axis="index")
-                .apply(resaltar_fila_max_semana, semmax=max_semana, axis=1)
-                .format({
-                    'C_Vnt': '{:,.0f}',
-                    'C_Stk': '{:,.0f}',
-                    'P_Prm': '$ {:,.0f}',
-                    'S_Evc': '{:.1f}'
-                })
-            )
+        st.subheader(f"{local[0]}-{local[1][5:]}")
+        
+        df_local = df_calculos[df_calculos['Local'] == local[0]].copy()
+        st.dataframe(
+            df_local[['Marca','Tipo_Programa','Fit_Estilo','Semanas','Cant_Venta','Cant_Stock','PVP_Prom','Sem_Evac']]
+            .rename(columns={
+                'Cant_Venta': 'C_Vnt',
+                'Cant_Stock': 'C_Stk',
+                'PVP_Prom': 'P_Prm',
+                'Sem_Evac': 'S_Evc'
+            })  # <--- Añade este bloque .rename()
+            .reset_index(drop=True)
+            .style.hide(axis="index")
+            .apply(resaltar_fila_max_semana, semmax=max_semana, axis=1)
+            .highlight_max(subset=['C_Vnt'], color='#FFFF93')
+            .apply(lambda x: highlight_min_non_zero(x, color='#FFFF93'), subset=['S_Evc'])
+            .apply(lambda x: highlight_min_non_zero(x, color='#F8D7DA'), subset=['C_Vnt'])
+            .highlight_max(subset=['S_Evc'], color='#F8D7DA')
+            .format({
+                'C_Vnt': '{:,.0f}',
+                'C_Stk': '{:,.0f}',
+                'P_Prm': '$ {:,.0f}',
+                'S_Evc': '{:.1f}'
+            }),
+            use_container_width=True
+        )
 
     st.write("Datos Originales")
     
@@ -124,34 +130,25 @@ def main(DataF):
         })       
     )  
     
-    if 'excel_data_tienda_original' not in st.session_state:
-        st.session_state['excel_data_tienda_original'] = b'' # Initialize with empty bytes
-
-    def generate_excel_tienda_original():
-        with st.spinner("Generando Excel de datos originales..."):
-            st.session_state['excel_data_tienda_original'] = to_excel(DataF)
-
-    st.download_button(
-        label="📥 Descargar en Excel",
-        data=st.session_state['excel_data_tienda_original'],
-        file_name=f"BD_Origen_{datetime.now().strftime('%Y-%m-%d')}.xlsx", #Con fecha de hoy
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        on_click=generate_excel_tienda_original
-    )
-
     st.write("Datos filtrados")
 
-    if 'excel_data_tienda_filtered' not in st.session_state:
-        st.session_state['excel_data_tienda_filtered'] = b'' # Initialize with empty bytes
-
-    def generate_excel_tienda_filtered():
-        with st.spinner("Generando Excel de datos filtrados..."):
-            st.session_state['excel_data_tienda_filtered'] = to_excel(df_filtrado)
-
-    st.download_button(
-        label="📥 Descargar Datos Filtrados en Excel",
-        data=st.session_state['excel_data_tienda_filtered'],
-        file_name=f"BD_Filtrada_Tiendas_{datetime.now().strftime('%Y-%m-%d')}.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        on_click=generate_excel_tienda_filtered
+    st.dataframe(
+        df_filtrado.head(10).reset_index(drop=True)
+        .style.hide(axis="index")
+        .format({
+            'Cant_Venta': '{:,.0f}',
+            'Cant_Stock': '{:,.0f}',
+            'PVP_Prom': '$ {:,.0f}',
+            'Sem_Evac': '{:.1f}'
+        })       
     )
+
+    #df_xlsx = to_excel(df_filtrado)
+""" 
+    st.download_button(
+        label="📥 Descargar Filtrado en Excel",
+        data=to_excel(df_filtrado),
+        file_name=f"Ventas_por_tienda_filtrado_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+ """

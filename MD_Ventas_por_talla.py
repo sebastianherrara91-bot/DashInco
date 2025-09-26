@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import GraficaBarraDobleTalla as GBDT
+from excel_exporter import to_excel
+from datetime import datetime
 from pandas.api.types import CategoricalDtype
 
 def main(DataF):
@@ -117,3 +119,14 @@ def main(DataF):
                     height=500
                 )
                 st.plotly_chart(fig, use_container_width=True, config={'scrollZoom': False, 'displayModeBar': False})
+
+    st.write("Datos filtrados por talla")
+    st.dataframe(df_filtroTL.head(10))
+    #df_xlsx = to_excel(df_filtroTL)
+
+"""     st.download_button(
+        label="📥 Descargar en Excel",
+        data=to_excel(df_filtroTL),
+        file_name=f"Ventas_por_talla_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    ) """
